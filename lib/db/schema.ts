@@ -100,7 +100,6 @@ export const brandAnalyses = pgTable('brand_analyses', {
   analysisData: jsonb('analysis_data'), // Stores the full analysis results
   competitors: jsonb('competitors'), // Stores competitor data
   prompts: jsonb('prompts'), // Stores the prompts used
-  creditsUsed: integer('credits_used').default(10),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow().$onUpdate(() => new Date()),
 });

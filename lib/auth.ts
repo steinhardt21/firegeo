@@ -1,7 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { Pool } from 'pg';
 import { sendEmail } from './email';
-import { autumn } from 'autumn-js/better-auth';
 
 // Helper function to get a valid base URL
 const getValidBaseURL = () => {
@@ -145,5 +144,4 @@ export const auth = betterAuth({
       });
     },
   },
-  plugins: [autumn()],
 });

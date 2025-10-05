@@ -67,7 +67,6 @@ export async function POST(request: NextRequest) {
       analysisData: body.analysisData,
       competitors: body.competitors,
       prompts: body.prompts,
-      creditsUsed: body.creditsUsed || 10,
     }).returning();
 
     return NextResponse.json(analysis);
