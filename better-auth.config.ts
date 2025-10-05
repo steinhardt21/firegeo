@@ -11,25 +11,37 @@ const getValidBaseURL = () => {
   const betterAuthUrl = process.env.BETTER_AUTH_URL;
   
   // Check if we have a valid URL
-  const isValidUrl = (url: string) => {
+  const isValidUrl = (url: string | undefined) => {
+    if (!url || typeof url !== 'string') return false;
+    
+    // Reject obviously invalid URLs
+    if (url === 'https://' || url === 'http://' || url.length < 10) {
+      return false;
+    }
+    
+    // Detect Railway template variables (not actual URLs during build)
+    if (url.includes('${{') || url.includes('}}')) {
+      return false;
+    }
+    
     try {
-      new URL(url);
-      return url !== 'https://' && url !== 'http://' && url.length > 10;
+      const parsed = new URL(url);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
     } catch {
       return false;
     }
   };
   
   // Try different sources in order of preference
-  if (betterAuthUrl && isValidUrl(betterAuthUrl)) {
-    return betterAuthUrl;
+  if (isValidUrl(betterAuthUrl)) {
+    return betterAuthUrl!;
   }
   
-  if (envUrl && isValidUrl(envUrl)) {
-    return envUrl;
+  if (isValidUrl(envUrl)) {
+    return envUrl!;
   }
   
-  // During build time on Railway, use a placeholder that won't cause errors
+  // During build time on Railway or production, use a safe placeholder
   if (process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production') {
     return 'https://placeholder.railway.app';
   }

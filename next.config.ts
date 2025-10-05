@@ -26,11 +26,8 @@ const nextConfig: NextConfig = {
   },
   // Configure for Railway deployment
   output: 'standalone',
-  // Disable static optimization during Railway build to avoid auth issues
+  // Railway-specific optimizations
   ...(process.env.RAILWAY_ENVIRONMENT && {
-    experimental: {
-      outputStandalone: true,
-    },
     // Skip static generation for pages that require auth during build
     generateBuildId: async () => {
       return 'railway-build-' + Date.now();
