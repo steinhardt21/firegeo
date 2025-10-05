@@ -6,7 +6,6 @@ import { autumn } from 'autumn-js/better-auth';
 // Helper function to get a valid base URL
 const getValidBaseURL = () => {
   const envUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const betterAuthUrl = process.env.BETTER_AUTH_URL;
   
   // Check if we have a valid URL
   const isValidUrl = (url: string | undefined) => {
@@ -30,11 +29,7 @@ const getValidBaseURL = () => {
     }
   };
   
-  // Try different sources in order of preference
-  if (isValidUrl(betterAuthUrl)) {
-    return betterAuthUrl!;
-  }
-  
+  // Use NEXT_PUBLIC_APP_URL if valid
   if (isValidUrl(envUrl)) {
     return envUrl!;
   }
