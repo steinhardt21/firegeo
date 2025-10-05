@@ -8,21 +8,33 @@ import { handleApiError, AuthenticationError, ValidationError } from '@/lib/api-
 // GET /api/brand-monitor/analyses - Get user's brand analyses
 export async function GET(request: NextRequest) {
   try {
+    console.log('🔍 [ANALYSES API] Starting GET request');
+    
     const sessionResponse = await auth.api.getSession({
       headers: request.headers,
     });
 
+    console.log('🔍 [ANALYSES API] Session response:', {
+      hasUser: !!sessionResponse?.user,
+      userId: sessionResponse?.user?.id
+    });
+
     if (!sessionResponse?.user) {
+      console.log('❌ [ANALYSES API] No user session found');
       throw new AuthenticationError('Please log in to view your analyses');
     }
 
+    console.log('🔍 [ANALYSES API] Attempting to query brandAnalyses table...');
+    
     const analyses = await db.query.brandAnalyses.findMany({
       where: eq(brandAnalyses.userId, sessionResponse.user.id),
       orderBy: desc(brandAnalyses.createdAt),
     });
 
+    console.log('✅ [ANALYSES API] Successfully queried analyses:', analyses.length);
     return NextResponse.json(analyses);
   } catch (error) {
+    console.error('❌ [ANALYSES API] Error:', error);
     return handleApiError(error);
   }
 }
