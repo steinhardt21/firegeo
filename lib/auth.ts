@@ -7,9 +7,20 @@ import { autumn } from 'autumn-js/better-auth';
 const getValidBaseURL = () => {
   const envUrl = process.env.NEXT_PUBLIC_APP_URL;
   
+  console.log('🔍 [SERVER AUTH] Environment Debug:', {
+    NEXT_PUBLIC_APP_URL: envUrl,
+    NODE_ENV: process.env.NODE_ENV,
+    RAILWAY_ENVIRONMENT: process.env.RAILWAY_ENVIRONMENT,
+    RAILWAY_PUBLIC_DOMAIN: process.env.RAILWAY_PUBLIC_DOMAIN,
+    timestamp: new Date().toISOString()
+  });
+  
   // Check if we have a valid URL
   const isValidUrl = (url: string | undefined) => {
-    if (!url || typeof url !== 'string') return false;
+    if (!url || typeof url !== 'string') {
+      console.log('❌ [SERVER AUTH] URL is undefined or not string:', url);
+      return false;
+    }
     
     // Reject obviously invalid URLs - be more comprehensive
     if (!url || 
@@ -21,32 +32,40 @@ const getValidBaseURL = () => {
         url === 'http://.' ||
         url.endsWith('/.') ||   // Malformed URLs ending with /.
         url.length < 10) {
+      console.log('❌ [SERVER AUTH] Rejected invalid URL:', JSON.stringify(url));
       return false;
     }
     
     // Detect Railway template variables (not actual URLs during build)
     if (url.includes('${{') || url.includes('}}')) {
+      console.log('🚂 [SERVER AUTH] Detected Railway template variable:', url);
       return false;
     }
     
     try {
       const parsed = new URL(url);
-      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
-    } catch {
+      const isValid = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      console.log('✅ [SERVER AUTH] URL validation result:', url, 'valid:', isValid);
+      return isValid;
+    } catch (error) {
+      console.log('❌ [SERVER AUTH] URL parsing failed:', url, error.message);
       return false;
     }
   };
   
   // Use NEXT_PUBLIC_APP_URL if valid
   if (isValidUrl(envUrl)) {
+    console.log('🎯 [SERVER AUTH] Using NEXT_PUBLIC_APP_URL:', envUrl);
     return envUrl!;
   }
   
   // During build time on Railway or production, use a safe placeholder
   if (process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production') {
+    console.log('🚂 [SERVER AUTH] Using Railway placeholder URL');
     return 'https://placeholder.railway.app';
   }
   
+  console.log('🏠 [SERVER AUTH] Using localhost fallback');
   return 'http://localhost:3000';
 };
 
