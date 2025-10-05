@@ -5,10 +5,42 @@ import * as dotenv from 'dotenv';
 // Load environment variables for CLI
 dotenv.config({ path: '.env.local' });
 
+// Helper function to get a valid base URL
+const getValidBaseURL = () => {
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const betterAuthUrl = process.env.BETTER_AUTH_URL;
+  
+  // Check if we have a valid URL
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return url !== 'https://' && url !== 'http://' && url.length > 10;
+    } catch {
+      return false;
+    }
+  };
+  
+  // Try different sources in order of preference
+  if (betterAuthUrl && isValidUrl(betterAuthUrl)) {
+    return betterAuthUrl;
+  }
+  
+  if (envUrl && isValidUrl(envUrl)) {
+    return envUrl;
+  }
+  
+  // During build time on Railway, use a placeholder that won't cause errors
+  if (process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production') {
+    return 'https://placeholder.railway.app';
+  }
+  
+  return 'http://localhost:3000';
+};
+
 const env = {
   DATABASE_URL: process.env.DATABASE_URL!,
   BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET!,
-  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+  NEXT_PUBLIC_APP_URL: getValidBaseURL(),
   NODE_ENV: process.env.NODE_ENV || 'development',
 };
 
